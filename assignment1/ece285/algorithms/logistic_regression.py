@@ -82,6 +82,5 @@ class Logistic(object):
         # TODO: implement me
         y_prediction = np.dot(X_test,self.w.T)
         y_pred_sigmoid = self.sigmoid(y_prediction)
-        y_test_pred = np.argmax(y_pred_sigmoid,axis = 1)
-        
+        y_test_pred = np.argmax(y_pred_sigmoid,axis = 1)      
         return y_test_pred
