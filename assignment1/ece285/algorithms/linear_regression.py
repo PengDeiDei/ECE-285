@@ -19,7 +19,7 @@ class Linear(object):
         self.epochs = epochs
         self.n_class = n_class
         self.weight_decay = weight_decay
-
+        
     def train(self, X_train: np.ndarray, y_train: np.ndarray, weights: np.ndarray) -> np.ndarray:
         """Train the classifier.
 
@@ -32,10 +32,19 @@ class Linear(object):
         """
 
         N, D = X_train.shape
+        num_class = self.n_class
+        y_train_2class = np.ones((N,num_class))*(-1)
+        
+        for i in range(N):
+            y_train_2class[i,y_train[i]] = 1
+        
+        for i in range(self.epochs):
+            y_hat = np.dot(X_train,weights.T)
+            loss = y_train_2class - y_hat
+            gradient = np.dot(loss.T,X_train)/N
+            weights = weights - self.lr*gradient - self.weight_decay*weights
+            
         self.w = weights
-
-        # TODO: implement me
-
         return self.w
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
@@ -51,4 +60,7 @@ class Linear(object):
                 class.
         """
         # TODO: implement me
-        pass
+        y_pred = np.dot(X_test,self.w.T)
+        y_test_pred = np.argmax(y_pred,axis = 1)
+        
+        return y_test_pred
