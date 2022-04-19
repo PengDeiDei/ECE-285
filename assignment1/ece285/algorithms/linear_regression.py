@@ -33,14 +33,17 @@ class Linear(object):
 
         N, D = X_train.shape
         num_class = self.n_class
-        y_train_2class = np.ones((N,num_class))*(-1)
+        y_train_2class = np.zeros((N,num_class))
         
+        # I use one vs rest, assign 1 to the class and 0 to the rest rather than -1 to avoid overflow
         for i in range(N):
             y_train_2class[i,y_train[i]] = 1
         
+        # the loss function should be the L2 norm of the difference between y_hat - y_train
+        # for conveniently calculating the gradient, only use y_hat - y_train
         for i in range(self.epochs):
             y_hat = np.dot(X_train,weights.T)
-            loss = y_train_2class - y_hat
+            loss = y_hat - y_train_2class
             gradient = np.dot(loss.T,X_train)/N
             weights = weights - self.lr*gradient - self.weight_decay*weights
             
@@ -59,7 +62,7 @@ class Linear(object):
                 length N, where each element is an integer giving the predicted
                 class.
         """
-        # TODO: implement me
+        # return the prediction with highest score
         y_pred = np.dot(X_test,self.w.T)
         y_test_pred = np.argmax(y_pred,axis = 1)
         
