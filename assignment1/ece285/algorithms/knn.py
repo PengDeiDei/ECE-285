@@ -27,9 +27,9 @@ class KNN(object):
         Use the contained training set to predict labels for test samples
 
         Parameters:
-            x_test    : Test samples                                     ; np.ndarray with shape (N, D)
-            k         : k to overwrite the one specificed during training; int
-            loop_count: parameter to choose different knn implementation ; int
+            x_test    : Test samples; np.ndarray with shape (N, D)
+            k       : k to overwrite the one specificed during training; int
+            loop_count : parameter to choose different knn implementation ; int
 
         Returns:
             predicted labels for the data in X_test; a 1-dimensional array of
@@ -45,7 +45,15 @@ class KNN(object):
             distance = self.calc_dis_two_loop(x_test)
 
         # TODO: implement me
-        pass
+        num_test = x_test.shape[0]
+        y_test = np.zeros(num_test)
+        
+        for i in range(num_test):
+            sorted_distance = np.argsort(distance[i])
+            y_knn = list(self._y_train[sorted_distance[0:k]])
+            y_test[i] = np.argmax(np.bincount(y_knn))
+            
+        return y_test
 
     def calc_dis_one_loop(self, x_test: np.ndarray):
         """
@@ -56,9 +64,23 @@ class KNN(object):
         Parameters:
             x_test: Test samples; np.ndarray with shape (N, D)
         """
-
-        # TODO: implement me
-        pass
+        num_train = self._x_train.shape[0]
+        num_test = x_test.shape[0]
+        
+        # distance matrix, size = (num_test,num_train)
+        distance = np.zeros((num_test,num_train))
+        """
+        I found a way without using any loop at all,and it is much faster. Here is the code:
+        
+        dists = np.zeros((num_test, num_train)) 
+        dists = np.sqrt(np.sum(np.square(self._x_train), axis=1) + np.sum(np.square(x_test), axis=1)[:, np.newaxis] - 
+                       2 * np.dot(x_test, self._x_train.T))
+        """
+        for j in range(num_train):
+            distance[:,j] = np.sum((x_test - self._x_train[j])**2, axis=1)
+        
+        distance = np.sqrt(distance)
+        return distance
 
     def calc_dis_two_loop(self, x_test: np.ndarray):
         """
@@ -69,5 +91,16 @@ class KNN(object):
         Parameters:
             x_test: Test samples; np.ndarray with shape (N, D)
         """
-        # TODO: implement me
-        pass
+        num_train = self._x_train.shape[0]
+        num_test = x_test.shape[0]
+        
+        # distance matrix, size = (num_test,num_train)
+        distance = np.zeros((num_test,num_train))
+        
+        for i in range(num_test):
+            for j in range(num_train):
+                distance[i,j] = np.sum((x_test[i] - self._x_train[j])**2)
+            
+        distance = np.sqrt(distance)
+        return distance
+             
