@@ -11,6 +11,7 @@ class ReLU(BaseLayer):
         # output =
         # Store the input in cache, required for backward pass
         self.cache = input_x.copy()
+        output = max(0,input_x)
         return output
 
     def backward(self, dout):
