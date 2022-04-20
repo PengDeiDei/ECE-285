@@ -8,15 +8,15 @@ class ReLU(BaseLayer):
 
     def forward(self, input_x: np.ndarray):
         # TODO: Implement RELU activation function forward pass
-        # output =
+        output = np.maximum(0,input_x)
         # Store the input in cache, required for backward pass
         self.cache = input_x.copy()
-        output = max(0,input_x)
         return output
 
     def backward(self, dout):
         # Load the input from the cache
         x_temp = self.cache
         # Calculate gradient for RELU
-        # dx =
+        dx = dout.copy()
+        dx[x_temp <= 0] = 0 
         return dx
