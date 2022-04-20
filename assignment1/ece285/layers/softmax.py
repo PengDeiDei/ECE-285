@@ -24,7 +24,7 @@ class Softmax(BaseLayer):
         scores = input_x - np.max(input_x, axis=-1, keepdims=True)  # avoid numeric instability
 
         # Calculate softmax outputs e_i/sum(e_j)
-        # softmax_matrix =
+        softmax_matrix = np.exp(scores) / np.sum(np.exp(scores),axis=1,keepdims=True)
 
         assert scores.shape == input_x.shape, "Scores must be NxC"
 
