@@ -6,6 +6,7 @@
 ### User Brief Guide:
 #### 1. CelebA dataset: 
 Download link: https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg
+
 The package I downloaded is "img_align_celeba.zip", which contains .jpg version of images.
 It should be noticed that when user unzip this file, it creates a foler directly with all images, i.e. no subfolder.
 
