@@ -2,7 +2,7 @@
 ## Topic: Introduction to Visual Learning
 
 
-# Porject: DCGAN on CelebA dataset
+## Porject: DCGAN on CelebA dataset
 ### User Brief Guide:
 #### 1. CelebA dataset: 
 Download link: https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg
