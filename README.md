@@ -9,10 +9,15 @@ Download link: https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzT
 
 The package I downloaded is "img_align_celeba.zip", which contains .jpg version of images. It should be noticed that when user unzip this file, it creates a foler directly with all images, i.e. no subfolder.
 
-#### 2. DCGAN.py:
+#### 2. Project_DCGAN.ipynb
+This is jupyter notebook of our DCGAN project containing the whole training process. 
+
+Notice: the path of CelebA dataset folder defined in "datasets.ImageFolder()" function is weird. The path of the dataset should never be the path of folder which directly contains images. For example, if user store images in foler "dataset" whose path is "your_path/previous_folder/dataset", user should define the path as "your_path/previous_folder" to treat "dataset" folder as subfolder.
+
+#### 3. DCGAN.py:
 It is the architectures of discriminator and generator for DCGAN networks. 
 
-#### 3. groupImg.py:
+#### 4. groupImg.py:
 This is a script for copy a group of images with a specific feature from foler of CelebA dataset and transfer to a new folder defined by yourself.
 
 User should edit this script before compiling it.
