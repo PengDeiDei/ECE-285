@@ -2,4 +2,6 @@
 ## Topic: Introduction to Visual Learning
 
 
-# Porject
+# Porject: DCGAN on CelebA dataset
+### Notice:
+#### 1.
