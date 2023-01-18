@@ -1,96 +1,74 @@
 import torch
-import torchvision
 import torch.nn as nn
 
-
-# 定义鉴别器
-class Discriminator(nn.Module):
-    def __init__(self, channels_img, feature_d):
-        super(Discriminator, self).__init__()
-        self.disc = nn.Sequential(  # 定义鉴别器的网络组成
-            # input: n * channels_img * 64 * 64
-            nn.Conv2d(channels_img, feature_d, kernel_size=4, stride=2, padding=1),  # 输入图像的通道数（黑白色：1， RGB：3）
-            nn.LeakyReLU(0.2),
-            self._block(feature_d, feature_d * 2, 4, 2, 1),  # 16*16
-            self._block(feature_d * 2, feature_d * 4, 4, 2, 1),  # 8*8
-            self._block(feature_d * 4, feature_d * 8, 4, 2, 1),  # 4*4
-
-            nn.Conv2d(feature_d * 8, 1, kernel_size=4, stride=2, padding=0),  # 1*1
-            nn.Sigmoid(),  # 鉴别器中除了输出层是sigmoid其余层全是LeakyRelu
-        )
-
-    def _block(self, in_channels, out_channels, kernel_size, stride, padding):  # 定义在网络中反复使用的模块部分
-        return nn.Sequential(
-            nn.Conv2d(  # 卷积
-                in_channels,
-                out_channels,
-                kernel_size,
-                stride,
-                padding,
-                bias=False
-            ),
-            nn.BatchNorm2d(out_channels),  # 批标准化（）
-            nn.LeakyReLU(0.2)  # 激活函数
-        )
-
-    def forward(self, x):
-        return self.disc(x)
-
-
-# 定义生成器
 class Generator(nn.Module):
-    def __init__(self, z_dim, channels_img, features_g):
+    def __init__(self, nz, ngf, nc, ngpu):
         super(Generator, self).__init__()
-        self.gen = nn.Sequential(  # 定义生成器的网络组成
-            # 　input: n*z_dim*1*1
-            self._block(z_dim, features_g * 16, 4, 1, 0),  # n * f_g * 16 4 * 4
-            self._block(features_g * 16, features_g * 8, 4, 2, 1),  # 8 * 8
-            self._block(features_g * 8, features_g * 4, 4, 2, 1),  # 16 * 16
-            self._block(features_g * 4, features_g * 2, 4, 2, 1),  # 32 * 32
-            nn.ConvTranspose2d(features_g * 2, channels_img, kernel_size=4, stride=2, padding=1),
-            nn.Tanh()  # [-1, 1]
+        self.nz = nz
+        self.ngf = ngf
+        self.nc = nc
+        self.ngpu = ngpu
+        self.main = nn.Sequential(
+            # input is Z, going into a convolution
+            nn.ConvTranspose2d( self.nz, self.ngf * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(ngf * 8),
+            nn.ReLU(True),
+            # state size. (ngf*8) x 4 x 4
+            nn.ConvTranspose2d(self.ngf * 8, self.ngf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ngf * 4),
+            nn.ReLU(True),
+            # state size. (ngf*4) x 8 x 8
+            nn.ConvTranspose2d(self.ngf * 4, self.ngf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ngf * 2),
+            nn.ReLU(True),
+            # state size. (ngf*2) x 16 x 16
+            nn.ConvTranspose2d(self.ngf * 2, self.ngf, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ngf),
+            nn.ReLU(True),
+            # state size. (ngf) x 32 x 32
+            nn.ConvTranspose2d(self.ngf, self.nc, 4, 2, 1, bias=False),
+            nn.Tanh()
+            # state size. (nc) x 64 x 64
         )
 
-    def _block(self, in_channels, out_channels, kernel_size, stride, padding):  # 定义在网络中反复使用的模块部分
-        return nn.Sequential(
-            nn.ConvTranspose2d(  # 反卷积
-                in_channels,
-                out_channels,
-                kernel_size,
-                stride,
-                padding,
-                bias=False
-            ),
-            nn.BatchNorm2d(out_channels),  # 批标准化
-            nn.ReLU()  # 激活函数
+    def forward(self, input):
+        return self.main(input)
+
+class Discriminator(nn.Module):
+    def __init__(self, nc, ndf, ngpu):
+        super(Discriminator, self).__init__()
+        self.nc = nc
+        self.ndf = ndf
+        self.ngpu = ngpu
+        self.main = nn.Sequential(
+            # input is (nc) x 64 x 64
+            nn.Conv2d(self.nc, self.ndf, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf) x 32 x 32
+            nn.Conv2d(self.ndf, self.ndf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ndf * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*2) x 16 x 16
+            nn.Conv2d(self.ndf * 2, self.ndf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ndf * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*4) x 8 x 8
+            nn.Conv2d(self.ndf * 4, self.ndf * 8, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(self.ndf * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*8) x 4 x 4
+            nn.Conv2d(self.ndf * 8, 1, 4, 1, 0, bias=False),
+            nn.Sigmoid()
         )
 
-    def forward(self, x):
-        return self.gen(x)
-
-
-# 初始化权重参数
-def initialize_weights(model):
-    for m in model.modules():
-        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
-            nn.init.normal_(m.weight.data, 0.0, 0.02)
-
-
-# 测试函数
-def test():
-    N, in_channels, H, W = 8, 3, 64, 64  # 定义输入的图像数据是 8张，三通道的（RGB），64*64的影像
-    z_dim = 100  # 噪声影像的维度为100
-    x = torch.randn((N, in_channels, H, W))  # 生成和定义影像尺寸大小相等的张量
-
-    disc = Discriminator(in_channels, 8)
-    initialize_weights(disc)
-    assert disc(x).shape == (N, 1, 1, 1)
-
-    gen = Generator(z_dim, in_channels, 8)
-    z = torch.randn((N, z_dim, 1, 1))
-    assert gen(z).shape == (N, in_channels, H, W)
-
-    print("Success!")
-
-
-test()
+    def forward(self, input):
+        return self.main(input)
+    
+    
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
